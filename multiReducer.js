@@ -9,37 +9,59 @@
 
 import * as React from "react";
 
-const initialFormData = {
-    name: "",
-    email: "",
-    address: "",
-    city: "",
-    zipcode: ""
+const initialState = {
+    currentStep: 1,
+    formData: {
+        name: "",
+        email: "",
+        address: "",
+        city: "",
+        zipcode: ""
+    }
 };
 
+function reducer(state, action){
+    if (action.type === "next_step") {
+        return {...state, currentStep: state.currentStep + 1}
+    } else if (action.type === "prev_step") {
+
+    } else if (action.type === "change") {
+
+    } else if (action.type === "reset") {
+        return {
+            ...state,
+            formData: { ... state.formData, [action.name]: action.value}
+        }
+    } else {
+        throw new Error("this action type isn't supported")
+    }
+}
+
 export default function MultistepFormReducer() {
-    const [currentStep, setCurrentStep] = React.useState(1);
-    const [formData, setFormData] = React.useState(initialFormData);
+    const [state, dispatch] = React.useReducer(reducer, initialState)
 
     const handleNextStep = () => {
-        setCurrentStep(currentStep + 1);
+        dispatch({ type: "next_step"});
     };
 
     const handlePrevStep = () => {
-        setCurrentStep(currentStep - 1);
+        dispatch({ type: "prev_step"});
     };
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleChange = (e) => { 
+        dispatch({ 
+            type: "change",
+            name: e.target.name,
+            value: e.target.value
+        });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         alert("Thank you for your submission");
-        setCurrentStep(1);
-        setFormData(initialFormData);
+        dispatch({type : reset});
     };
 }
-
+const { currentStep, formData } = state;
 
   //After this is JSX code
