@@ -8,11 +8,33 @@
 import * as React from "react";
 import { createTask } from "./utils";
 
+// The reducer needs to have statements for each type made in the components and preferably an error catch.
 function reducer(tasks, action) {
-    return tasks;
+// each return statement will replace the current state value from the useReducer(in this case "tasks")
+    if(action.type === "add") {
+        return [...tasks, action.task]
+    }
+// Since reducer is mainly used for multiple state based effects, this will probably be an array or object
+    if(action.type === "updated") {
+        return tasks.map((task)=>
+            task.id===action.id ? 
+            {
+                ...task,
+                status: task.status === "pending" ? "completed":"pending"
+            }
+            : task
+        )
+    }
+// Therefore using .map, .filter, and spread operator are imperative
+// using task.id to relate to the current value and action.id for the new action 
+    if(action.type === "delete") {
+        return tasks.filter((task)=> task.id != action.id)
+    }
+    throw new Error("This action type isn't supported")
 }
 
 export default function TaskManager() {
+// [] is a blank array for the inital state.
     const [tasks, dispatch] = React.useReducer(reducer, []);
 
     const handleUpdateTaskStatus = (id) => {
