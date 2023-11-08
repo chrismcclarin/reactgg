@@ -9,13 +9,20 @@ import * as React from "react";
 import { calculatePrime, translations, formatNumberToString } from "./utils";
 
 export default function LocalizedPrimeNumbers() {
-    const count = 1;
-    const locale = "en-US";
+    // To increment prime and change the language, we need to set them as states.
+    const [count, setCount] = React.useState(1);
+    const [locale, setLocale] = React.useState("en-US");
 
-    const handleClick = () => {};
-    const handleLocaleChange = () => {};
+    // handleClick changes the count by 1, so it needs set Count
+    const handleClick = () => setCount(count + 1);
+    // handle locale change is changed when the value is different in the click event. 
+    const handleLocaleChange = (e) => setLocale(e.target.value);
 
-    const nthprime = calculatePrime(count);
+    // here is where we add the memoization. We need to control this calculation to only happen when count changes.
+    //much like use Effect, we add the function into the useMemo hook, and add count as a dependency.
+    const nthprime = React.useMemo(()=> {
+        return  calculatePrime(count);
+    }, [count]);
 
     return (
         <div>
