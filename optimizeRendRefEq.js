@@ -12,11 +12,13 @@ function ChildComponent({ children, onClick }) {
     return <button onClick={onClick}>{children}</button>;
 }
 
-const MemoizedChildComponent = ChildComponent;
+// Memoize the component, so it only renders once.
+const MemoizedChildComponent = React.memo(ChildComponent);
 
 export default function ParentComponent() {
     const [time, setTime] = React.useState(new Date().toLocaleTimeString());
-    let count = 0;
+    // add use State to adjust the state of count.
+    let [count, setCount] = React.useState(0);
 
     React.useEffect(() => {
         const timer = setInterval(() => {
@@ -27,8 +29,14 @@ export default function ParentComponent() {
             clearInterval(timer);
         };
     }, []);
-
-    const handleIncrementCount = () => {};
+    
+    // memoizing ChildComponent makes it so it will re-render only when the props change.
+    // The problem is that onClick is a reference value and therefore it will change on every render, which changes the prop, which re-renders, which then changes the prop, etc etc.
+    // this is where we use useCallback to control our onClick function
+    const handleIncrementCount = React.useCallback(() => {
+        setCount((count) => count + 1)
+    }, []);
+    // we passed a function to setCount to keep access to the current value of count without having a dependency array.
 
     return (
         <div>
