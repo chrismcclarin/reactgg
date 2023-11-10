@@ -27,14 +27,50 @@ export default function DataTable() {
             setSortOrder("asc");
         }
     };
+    
+    // a useEffect is added to fetch the data using the function that we are importing at the beginning.
+    React.useEffect(() => {
+        const handleFetchData = async () => {
+            const data = await fetchData();
+            setData(data);
+        };
+    
+        handleFetchData();
+    }, []);
 
     const handleToggleClick = () => {
         setIsRTL((prev) => !prev);
     };
 
-    const filteredData = [...data];
+    // Now we need to filter the data based on the match term. Then we add useMemo hook so that it isn't recalculated on every render
+    const filteredData = React.useMemo(()=>{
+        return data
+            .map((row)=>{
+                if (
+                    row.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    String(row.id).includes(searchTerm) ||
+                    String(row.weight).includes(searchTerm)
+                    ) {
+                    return row;
+                }
+                return null;
+            // .filter(Boolean): simple way to remove falsy values from an array.
+            }). filter(Boolean)
+        }, [data, searchTerm])
 
-    const sortedData = [...filteredData];
+    // Then we need to sort the filtered data, again using useMemo to prevent needless calculations.
+    const sortedData = React.useMemo(()=>{
+        return filteredData.toSorted((a,b)=>{
+            let aValue = a[sortColumn]
+            let bValue = b[sortColumn]
+            
+            if (sortOrder === "asc") {
+                return aValue > bValue ? 1: -1;
+            } else {
+                return aValue < bValue ? 1: -1;
+            }
+        })
+    }, [filteredData, sortColumn, sortOrder])
 
     return (
         <div></div>
