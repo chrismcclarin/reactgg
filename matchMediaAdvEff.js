@@ -10,23 +10,30 @@ import * as React from "react";
 import { phone, desktop } from "./icons";
 
 const query = "only screen and (max-width : 768px)";
+// useSyncExternalStore uses subscribe and getSnapshot functions.
+// getSnapshot is similar to the state, as it grabs a snapshot of the state that is being controlled elsewhere.
+// subscribe is similar to getState, as it connects to the outside source that is controlling the state.
+
+// in this case, we need to add those functions. The getSnapshot function will replace the handleChange function.
+const getSnapshot = () => {
+    return window.matchMedia(query).matches;
+};
+
+// subscribe will handle the event listeners so that whenever a change needs to happen it can call the getSnapshot.
+const subscribe = (callback) => {
+    const matchMedia = window.matchMedia(query);
+    matchMedia.addEventListener("change", callback);
+
+    return () => {
+        matchMedia.removeEventListener("change", callback);
+    };
+};
 
 export default function MatchMedia() {
-    const [isMobile, setIsMobile] = React.useState(false);
-
-    React.useEffect(() => {
-        const handleChange = () => {
-            setIsMobile(window.matchMedia(query).matches);
-        };
-
-        const matchMedia = window.matchMedia(query);
-
-        matchMedia.addEventListener("change", handleChange);
-
-        return () => {
-            matchMedia.removeEventListener("change", handleChange);
-        };
-    }, []);
+    // since State is being controlled elsewhere, we no longer need to control it in react.
+    // since getSnapshot and subscribe cover all the functionality, we just need to set isMobile to call those functions.
+    // useEffect is now replaced with useSyncExternalStore, so it is removed.
+    const isMobile = React.useSyncExternalStore(subscribe, getSnapshot);
 
     return (
         <section>
