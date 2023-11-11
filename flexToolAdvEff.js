@@ -11,17 +11,57 @@
 
 import * as React from "react";
 
+
 function Tip({ targetRef, children }) {
-    const tipLayout = {
+// first we need to set Tiplayout as an effect since we are changing its layout based on a changing variable.
+    const [tipLayout, setTipLayout] = React.useState({
         style: {
             top: 0,
             left: 0
             },
         position: "top"
-    };
+    });
+
+    // we need to add a reference to find the height of the tool tip.
+    const tipRef = React.useRef(null)
+
+    // We now have a reference to the height of the tool tip, and part of the props for this function, we have the reference to where text to hover over is located.
+    // targetRef and tipRef will be used with the getBoundingClientRect() 
+    // and we want the tool tip to show up while it is rendering but before the user sees, so useLayoutEffect is used.
+    React.useLayoutEffect(() => {
+        const tipRect = tipRef.current.getBoundingClientRect();
+        const targetRect = targetRef.current.getBoundingClientRect();
+        // the tip is a block of text. The target is also a block of text(usually just a word or phrase)
+        // Each block of text has a rectangle that sets it's dimensions. tipRect and targetRect are objects that hold those dimensions and their relations to the edges of the screen.
+
+        // targetRect.top is the length from the top of the screen to the top of the target rectangle.
+        const spaceAbove = targetRect.top;
+        // targetRect bottom is the distance from the top to the bottom of the target rectangle. By subtracting the innerheight of the window we have the distance from the rectangle to the bottom of the screen.
+        const spaceBelow = window.innerHeight - targetRect.bottom;
+
+        // This is for the tip layout. Targetrect left is the distance from the left of the screen to the left of the target rectangle.
+        // this is added to targetRect.width/2 to be centered on the target block, and then is subtracted by half the tip rectanlge.
+        // now we can set the padding of the tip to try and center it over the target.
+        const left = targetRect.left + targetRect.width / 2 - tipRect.width / 2;
+
+        if (tipRect.height > spaceAbove && spaceBelow > spaceAbove) {
+            setTipLayout({
+                position: "bottom",
+                style: { left, top: targetRect.bottom + 16 }
+            });
+        } else {
+            setTipLayout({
+                position: "top",
+                style: { left, top: targetRect.top - tipRect.height - 16 }
+            });
+        }
+
+    }, [targetRef]);
+
 
     return (
         <span
+            ref = {tipRef}
             className={`tooltip tooltip-${tipLayout.position}`}
             style={tipLayout.style}
         >
@@ -29,6 +69,8 @@ function Tip({ targetRef, children }) {
         </span>
     );
 }
+
+
 
 function Tooltip({ tip, children }) {
     const [isHovered, setIsHovered] = React.useState(false);
